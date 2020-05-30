@@ -7,18 +7,18 @@ with open('HISTORY.md') as history_file:
     HISTORY = history_file.read()
 
 setup_args = dict(
-    name='eliteprospect_scraper',
-    version='0.6',
-    description='Functions to scrape ice hockey data from eliteprospects',
+    name='swehockey_scraper',
+    version='0.1',
+    description='Functions to scrape ice hockey data and statistics from swehockey',
     long_description_content_type="text/markdown",
     long_description=README + '\n\n' + HISTORY,
     license='MIT',
     packages=find_packages(),
     author='Marcus Sjölin',
     author_email='marcussjolin89@gmail.com',
-    keywords=['ice hockey', 'scraping', 'sport analytics', 'datetime', 'time', 'requests'],
-    url='https://github.com/msjoelin/eliteprospect_scraper',
-    download_url='https://pypi.org/project/eliteprospect_scraper/'
+    keywords=['ice hockey', 'scraping', 'sport analytics', 'shl', 'analys', 'ishockey', 'hockeyallsvenskan'],
+    url='https://github.com/msjoelin/swehockey_scraper',
+    download_url='https://pypi.org/project/swehockey_scraper/'
 )
 
 install_requires = [
