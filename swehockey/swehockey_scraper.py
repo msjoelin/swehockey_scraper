@@ -12,19 +12,20 @@ from datetime import datetime
 
 
 
-def getGames(id_list):
+def getGames(df_ids):
     """
     Get all games from list of ids
     Output is dataframe with all games 
-    """
-    
+    """   
+    id_list = df_ids['schedule_id']
+
     data=[]
    
     # Loop over all players
     for index, schedule_id in enumerate(id_list):
     
         url = 'http://stats.swehockey.se/ScheduleAndResults/Schedule/' + schedule_id
-        print('Collects data from ' + url)
+        # print('Collects data from ' + url)
          
         df_games = pd.read_html(url)[2]
                  
@@ -62,14 +63,17 @@ def getGames(id_list):
         if df_id.shape[0] == df_games.shape[0]:
             df_games['game_id'] = df_id['href']
         else:
-            Print("Couldnt extract correct number of IDs")
+            #Print("Couldnt extract correct number of IDs")
             df_games['game_id'] = np.nan
             
         data.append(df_games)
         
-        print(schedule_id, " collected")
+        #print(schedule_id, " collected")
           
     games=pd.concat(data)
+
+    # Add season and leaugue
+    games = pd.merge(games, df_ids, on='schedule_id', how='left')
 
     
     return games
@@ -284,7 +288,7 @@ def getGameData(game_id):
         data.append(df_gameevents)
         datasummary.append(df_gamesummary)
         
-        print('collected ', index, game_id)
+        #print('collected ', index, game_id)
             
     games=pd.concat(data)
     gamessummary = pd.concat(datasummary)
