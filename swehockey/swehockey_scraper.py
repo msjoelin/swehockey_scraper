@@ -14,7 +14,8 @@ from datetime import datetime
 
 def getGames(id_list):
     """
-    Get all games from list of ids sent to 
+    Get all games from list of ids
+    Output is dataframe with all games 
     """
     
     data=[]
@@ -76,6 +77,9 @@ def getGames(id_list):
 
 
 def getPeriodWinner(homescore, awayscore):
+    """
+    Function to determine periodwinner 
+    """
     if (homescore==awayscore):
         return 'draw'
     elif (homescore>awayscore):
