@@ -44,7 +44,8 @@ def getGames(df_ids):
         df_games['schedule_id'] = schedule_id
             
         # Extract game-id (found in href - javascript)
-        page = requests.get(url)
+        agent = {"User-Agent":"Mozilla/5.0"}
+        page = requests.get(url, headers=agent)
         soup = BeautifulSoup(page.text, 'html.parser')
         
         address_class = soup.find_all('td', {"class": ["tdOdd standardPaddingTop", "tdNormal standardPaddingTop", 
