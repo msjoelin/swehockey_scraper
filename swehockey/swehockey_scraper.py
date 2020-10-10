@@ -60,12 +60,8 @@ def getGames(df_ids):
         #Split string, only keep ID
         df_id['href'] = df_id['href'].str.split(">", n=0, expand=True)
         df_id['href'] = df_id['href'].str.extract('(\d+)')
-    
-        if df_id.shape[0] == df_games.shape[0]:
-            df_games['game_id'] = df_id['href']
-        else:
-            #Print("Couldnt extract correct number of IDs")
-            df_games['game_id'] = np.nan
+        
+        df_games=pd.concat([df_games,df_id['game_id']], axis=1)
             
         data.append(df_games)
         
