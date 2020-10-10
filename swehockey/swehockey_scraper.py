@@ -59,7 +59,7 @@ def getGames(df_ids):
          
         #Split string, only keep ID
         df_id['href'] = df_id['href'].str.split(">", n=0, expand=True)
-        df_id['href'] = df_id['href'].str.extract('(\d+)')
+        df_id['game_id'] = df_id['href'].str.extract('(\d+)')
         
         df_games=pd.concat([df_games,df_id['game_id']], axis=1)
             
