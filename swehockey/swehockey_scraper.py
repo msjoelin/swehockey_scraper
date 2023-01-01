@@ -115,7 +115,7 @@ def cleanGames(df_games):
     Clean output from getGames into data for analysis
     """
 
-    df_games[['home', 'away']] = df_games.game.str.split('-', expand = True, n=2)
+    df_games[['home', 'away']] = df_games.game.str.split(' - ', expand = True, n=2)
     df_games[['score_home', 'score_away']] = df_games.score.str.split('-', expand = True, n=2)
     
     df_games.columns = df_games.columns.str.strip()
