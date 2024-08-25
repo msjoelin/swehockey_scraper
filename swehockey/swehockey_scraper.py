@@ -117,7 +117,7 @@ def replaceTeamName(teamname):
         return 'AIK'
     elif (teamname=='Bofors IK Karlskoga'):
         return 'Bofors IK'
-    elif ((teamname=='Färjestad BKMatchstart ca 20.30') |(teamname=='Färjestads BK')) :
+    elif ((teamname=='Färjestad BKMatchstart ca 20.30') |(teamname=='Färjestad BK Matchstart ca 20.30') |(teamname=='Färjestads BK')) :
         return 'Färjestad BK'
     elif (teamname=='Linköpings HC'):
         return 'Linköping HC'
@@ -176,7 +176,7 @@ def cleanGames(df_games):
 
 def getTeamData(df_games):
     """
-    Takes outout from cleanGames and returns dataframe 
+    Takes output from cleanGames and returns dataframe 
     with row by row by team. This is for analysis 
     """
     
@@ -200,11 +200,11 @@ def getTeamData(df_games):
     # Lag games and results
     df_teams = df_teams.sort_values(['team', 'date']).reset_index(drop=True)
 
-    df_teams['result_L1'] = df_teams.groupby(['team', 'season'])['result'].shift(periods=1)
-    df_teams['result_L2'] = df_teams.groupby(['team', 'season'])['result'].shift(periods=2)
-    df_teams['result_L3'] = df_teams.groupby(['team', 'season'])['result'].shift(periods=3)
-    df_teams['result_L4'] = df_teams.groupby(['team', 'season'])['result'].shift(periods=4)
-    df_teams['result_L5'] = df_teams.groupby(['team', 'season'])['result'].shift(periods=5)
+    df_teams['result_L1'] = df_teams.groupby(['team', 'schedule_id'])['result'].shift(periods=1)
+    df_teams['result_L2'] = df_teams.groupby(['team', 'schedule_id'])['result'].shift(periods=2)
+    df_teams['result_L3'] = df_teams.groupby(['team', 'schedule_id'])['result'].shift(periods=3)
+    df_teams['result_L4'] = df_teams.groupby(['team', 'schedule_id'])['result'].shift(periods=4)
+    df_teams['result_L5'] = df_teams.groupby(['team', 'schedule_id'])['result'].shift(periods=5)
     
     df_teams['win'] = 0
     df_teams.loc[df_teams['result'] == 'win', 'win'] = 1
@@ -213,32 +213,34 @@ def getTeamData(df_games):
     df_teams['lost'] = 0
     df_teams.loc[df_teams['result'] == 'lost', 'lost'] = 1   
     
-    df_teams['win_R5'] = df_teams.groupby(['team', 'season'])['win'].rolling(5, min_periods=1).mean().values
-    df_teams['win_R5'] =df_teams.groupby(['team', 'season'])['win_R5'].shift(fill_value=0)
+    df_teams['win_R5'] = df_teams.groupby(['team', 'schedule_id'])['win'].rolling(5, min_periods=1).mean().values
+    df_teams['win_R5'] =df_teams.groupby(['team', 'schedule_id'])['win_R5'].shift(fill_value=0)
     
-    df_teams['draw_R5'] = df_teams.groupby(['team', 'season'])['draw'].rolling(5, min_periods=1).mean().values
-    df_teams['draw_R5'] =df_teams.groupby(['team', 'season'])['draw_R5'].shift(fill_value=0)
+    df_teams['draw_R5'] = df_teams.groupby(['team', 'schedule_id'])['draw'].rolling(5, min_periods=1).mean().values
+    df_teams['draw_R5'] =df_teams.groupby(['team', 'schedule_id'])['draw_R5'].shift(fill_value=0)
     
-    df_teams['lost_R5'] = df_teams.groupby(['team', 'season'])['lost'].rolling(5, min_periods=1).mean().values
-    df_teams['lost_R5'] =df_teams.groupby(['team', 'season'])['lost_R5'].shift(fill_value=0)
+    df_teams['lost_R5'] = df_teams.groupby(['team', 'schedule_id'])['lost'].rolling(5, min_periods=1).mean().values
+    df_teams['lost_R5'] =df_teams.groupby(['team', 'schedule_id'])['lost_R5'].shift(fill_value=0)
     
     # Matchday
-    df_teams['matchday'] = df_teams.groupby(['team', 'season']).cumcount()+1
-    df_teams['matchday_h_a'] = df_teams.groupby(['team', 'season', 'h_a']).cumcount() +1 
+    df_teams['matchday'] = df_teams.groupby(['team', 'schedule_id']).cumcount()+1
+    df_teams['matchday_h_a'] = df_teams.groupby(['team', 'schedule_id', 'h_a']).cumcount() +1 
      
     # Scored
-    df_teams['scored_avg_R5'] = df_teams.groupby(['team', 'season'])['score_team'].rolling(5, min_periods=1).mean().values
-    df_teams['scored_avg_R5'] =df_teams.groupby(['team', 'season'])['scored_avg_R5'].shift(fill_value=0)
-    df_teams['conceded_avg_R5'] = df_teams.groupby(['team', 'season'])['score_opponent'].rolling(5, min_periods=1).mean().values
-    df_teams['conceded_avg_R5'] =df_teams.groupby(['team', 'season'])['conceded_avg_R5'].shift(fill_value=0)
+    df_teams['scored_avg_R5'] = df_teams.groupby(['team', 'schedule_id'])['score_team'].rolling(5, min_periods=1).mean().values
+    df_teams['scored_avg_R5'] =df_teams.groupby(['team', 'schedule_id'])['scored_avg_R5'].shift(fill_value=0)
+    df_teams['conceded_avg_R5'] = df_teams.groupby(['team', 'schedule_id'])['score_opponent'].rolling(5, min_periods=1).mean().values
+    df_teams['conceded_avg_R5'] =df_teams.groupby(['team', 'schedule_id'])['conceded_avg_R5'].shift(fill_value=0)
     
-    df_teams['scored_cum'] = df_teams.groupby(['team', 'season'])['score_team'].cumsum()
-    df_teams['scored_cum_prev'] =df_teams.groupby(['team', 'season'])['scored_cum'].shift(fill_value=0)
+    df_teams['scored_cum'] = df_teams.groupby(['team', 'schedule_id'])['score_team'].cumsum()
+    df_teams['scored_cum_prev'] =df_teams.groupby(['team', 'schedule_id'])['scored_cum'].shift(fill_value=0)
     df_teams['scored_cum_prev_avg'] = df_teams['scored_cum_prev'] / (df_teams['matchday']-1)
     
-    df_teams['conceded_cum'] = df_teams.groupby(['team', 'season'])['score_opponent'].cumsum()
-    df_teams['conceded_cum_prev'] =df_teams.groupby(['team', 'season'])['conceded_cum'].shift(fill_value=0)
+    df_teams['conceded_cum'] = df_teams.groupby(['team', 'schedule_id'])['score_opponent'].cumsum()
+    df_teams['conceded_cum_prev'] =df_teams.groupby(['team', 'schedule_id'])['conceded_cum'].shift(fill_value=0)
     df_teams['conceded_cum_prev_avg'] = df_teams['conceded_cum_prev'] / (df_teams['matchday']-1)
+    
+    df_teams['goal_difference_cum'] = df_teams['scored_cum'] - df_teams['conceded_cum'] 
     
     # H2H
     df_teams['H2H_W'] = df_teams.groupby(['team', 'opponent'])['win'].cumsum()
@@ -257,16 +259,28 @@ def getTeamData(df_games):
     df_teams.loc[(df_teams['result_p4'] == 'win') | (df_teams['result_p5'] == 'win'), 'points'] = 2
     df_teams.loc[(df_teams['result_p4'] == 'lost') | (df_teams['result_p5'] == 'lost'), 'points'] = 1
     
-    df_teams['points_cum'] = df_teams.groupby(['team', 'season'])['points'].cumsum()
-    df_teams['points_cum_prev'] =df_teams.groupby(['team', 'season'])['points_cum'].shift(fill_value=0)    
+    df_teams['points_cum'] = df_teams.groupby(['team', 'schedule_id'])['points'].cumsum()
+    df_teams['points_cum_prev'] =df_teams.groupby(['team', 'schedule_id'])['points_cum'].shift(fill_value=0)    
     df_teams['points_cum_prev_avg'] = df_teams['points_cum_prev'] / (df_teams['matchday']-1)
  
-    df_teams['points_cum_h_a'] = df_teams.groupby(['team', 'season', 'h_a'])['points'].cumsum()
-    df_teams['points_cum_h_a_prev'] =df_teams.groupby(['team', 'season', 'h_a'])['points_cum_h_a'].shift(fill_value=0)
+    df_teams['points_cum_h_a'] = df_teams.groupby(['team', 'schedule_id', 'h_a'])['points'].cumsum()
+    df_teams['points_cum_h_a_prev'] =df_teams.groupby(['team', 'schedule_id', 'h_a'])['points_cum_h_a'].shift(fill_value=0)
     df_teams['points_cum_h_a_prev_avg'] = df_teams['points_cum_h_a_prev'] / (df_teams['matchday_h_a']-1)
     
+    # Assign the table position based on cumulative points
+    df_teams['table_position_base'] = df_teams.groupby(['schedule_id', 'matchday'])['points_cum'].rank(ascending=False, method = 'min')
+    # If we have same cumulative points, we rank on goaldifference 
+    df_teams['table_position_goaldiff'] = df_teams.groupby(['schedule_id', 'matchday', 'table_position_base'])['goal_difference_cum'].rank(ascending=False, method = 'min')
+    # Create the final rank by combining the base an goaldifference rank
+    df_teams['table_position'] = df_teams['table_position_base'] + df_teams['table_position_goaldiff'] - 1 
+    
+    # Drop the helper table position columns
+    df_teams = df_teams.drop(columns=['table_position_base', 'table_position_goaldiff'])
+
  
     return df_teams
+    
+
     
 
 def getGameData(game_id):
