@@ -9,41 +9,63 @@ from bs4  import BeautifulSoup
 import requests
 import time
 from datetime import datetime
+import re
 
 
 
-def getGames(df_ids):
+def getGames(season_id):
     """
-    Get all games from list of ids
-    Output is dataframe with all games 
+    Get all games from list of season ids. 
+    Season ID should be a pd series. 
+    Output is dataframe with all games , including results, venue, date, period and the game id 
     """   
-    id_list = df_ids['schedule_id']
-
     data=[]
    
-    # Loop over all players
-    for index, schedule_id in enumerate(id_list):
+    # Loop over all ids in the list
+    for index, schedule_id in enumerate(season_id):
     
         url = 'http://stats.swehockey.se/ScheduleAndResults/Schedule/' + schedule_id
-        # print('Collects data from ' + url)
-         
+        
+        # Read in the table from the list 
         df_games = pd.read_html(url)[2]
+        df_games.columns = df_games.columns.get_level_values(1)
                  
-        # Select relevant columns and rename (structure of table changed from season 18/19)        
-        if df_games.columns[0][1]=='Round':
-            df_games = df_games.iloc[:,[1,2,3,4,5]]
-        else:
-            df_games = df_games.iloc[:,[1,3,4,5,6]]
+        # Initiate a new cleaned dataframe to store the result when we have found relevant data
+        df_games_cleaned=pd.DataFrame()
+        
+        # Find the first column with a date format (could be with timestamp after)
+        date_pattern = r'^\d{4}-\d{2}-\d{2}'
 
-        df_games.columns = ['date', 'game', 'score', 'periodscore', 'spectators']
-        
-        # Adjust date column; remove time and fill empty rows with previous value
-        df_games['date'] = df_games['date'].map(lambda x: str(x)[:-5])    
-        df_games['date'] = df_games['date'].replace('', np.nan).ffill(axis=0)
-        
-        df_games['schedule_id'] = schedule_id
+        # Loop through columns and assign the column to the new df 
+        for i, col in enumerate(df_games.columns):
+            if re.match(date_pattern, str(df_games[col].iloc[0])):
+                df_games_cleaned['date_col'] = df_games[[col]]
+                break
+
+
+        # Find the first column after the date column which has more than 8 letters (this should ensure we have the game here)
+        # Also grab the 4 nextcoming columns 
+
+        for i, col in enumerate(df_games.columns):
+            if len(re.findall(r'[a-zA-Z]', str(df_games[col].iloc[0])))>=8:
+                # Grab the current column and the next 3 columns
+                df_games_cleaned['game'] = df_games.iloc[:, i]
+                df_games_cleaned['score'] = df_games.iloc[:, i+1]
+                df_games_cleaned['periodscore'] = df_games.iloc[:, i+2]
+                df_games_cleaned['spectators'] = df_games.iloc[:, i+3]
+                break
+
+        # Adjust the date column -> clean away datatime, and if no date value, fill with previous non-null value
+        df_games_cleaned['date'] = pd.to_datetime(df_games_cleaned['date_col'], errors='coerce').dt.strftime('%Y-%m-%d').fillna('')
+        df_games_cleaned['date'] = df_games_cleaned['date'].replace('', pd.NA).ffill().fillna('')
+
+        df_games_cleaned = df_games_cleaned.drop(columns=['date_col'])
+
+
+        # Assign the schedule id to the dataframe
+        df_games_cleaned['schedule_id'] = schedule_id
             
-        # Extract game-id (found in href - javascript)
+        # Extract the game-id, which is found in href - javascript
         agent = {"User-Agent":"Mozilla/5.0"}
         page = requests.get(url, headers=agent)
         soup = BeautifulSoup(page.text, 'html.parser')
@@ -57,21 +79,16 @@ def getGames(df_ids):
                 
         df_id = pd.DataFrame(all_a, columns=['href']) 
          
-        #Split string, only keep ID
-        df_id['href'] = df_id['href'].str.split(">", n=0, expand=True)
-        df_id['game_id'] = df_id['href'].str.extract('(\d+)')
+        #Extract the game id from the href column 
+        df_id['game_id'] =  df_id['href'].str.extract(r'/Game/Events/(\d+)')
         
-        df_games=pd.concat([df_games,df_id['game_id']], axis=1)
-            
-        data.append(df_games)
-        
-        #print(schedule_id, " collected")
-          
+        # Add the games 
+        df_games_cleaned=pd.concat([df_games_cleaned,df_id['game_id']], axis=1)
+      
+        data.append(df_games_cleaned)
+                  
+
     games=pd.concat(data)
-
-    # Add season and leaugue
-    games = pd.merge(games, df_ids, on='schedule_id', how='left')
-
     
     return games
 
