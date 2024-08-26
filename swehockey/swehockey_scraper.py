@@ -47,7 +47,7 @@ def getGames(season_id):
         # Also grab the 4 nextcoming columns 
 
         for i, col in enumerate(df_games.columns):
-            if len(re.findall(r'[a-zA-Z]', str(df_games[col].iloc[0])))>=8:
+            if len(re.findall(r'[a-zA-Z]', str(df_games[col].iloc[0])))>=5:
                 # Grab the current column and the next 3 columns
                 df_games_cleaned['game'] = df_games.iloc[:, i]
                 df_games_cleaned['score'] = df_games.iloc[:, i+1]
@@ -86,6 +86,8 @@ def getGames(season_id):
         df_games_cleaned=pd.concat([df_games_cleaned,df_id['game_id']], axis=1)
       
         data.append(df_games_cleaned)
+
+        print('Schedule ID ' + schedule_id + ' added with ' + str(len(df_games_cleaned)) + ' rows')
                   
 
     games=pd.concat(data)
