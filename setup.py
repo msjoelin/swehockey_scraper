@@ -8,7 +8,7 @@ with open('HISTORY.md') as history_file:
 
 setup_args = dict(
     name='swehockey_scraper',
-    version='1.4',
+    version='1.5',
     description='Functions to scrape ice hockey data and statistics from swehockey',
     long_description_content_type="text/markdown",
     long_description=README + '\n\n' + HISTORY,
