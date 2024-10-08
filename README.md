@@ -1,8 +1,11 @@
 # swehockey_scraper
 This package can be used to collect data with web scraping from the page stats.swehockey.se. 
-This is the website where the Swedish Icehockey Federation stores all data. 
+This is the website where the Swedish Icehockey Federation stores match statistics. 
 
 This package is only for personal usage. 
+
+I try to update this package in case something is changing. Any changes to the homepage structure means likely that functions needs to get updated as well. 
+If you find something, please get in touch so that we can fix it. 
 
 ## Getting started
 Package can be installed with pip  
